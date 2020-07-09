@@ -227,6 +227,8 @@ int main(int argc, char *argv[])
     bool connectionSucceeded = false;
     bool connectionClosed = false;
     bool connectionCompleted = false;
+    bool publishCompleted = false;
+    bool subscribeAck = false;
 
     /*
      * This will execute when an mqtt connect has completed or failed.
@@ -318,14 +320,17 @@ int main(int argc, char *argv[])
             {
                 fprintf(stdout, "Subscribe failed with error %s\n", aws_error_debug_str(errorCode));
             }
+            subscribeAck = true;
+            std::lock_guard<std::mutex> lockGuard(mutex);
             conditionVariable.notify_one();
         };
 
         connection->Subscribe(topic.c_str(), AWS_MQTT_QOS_AT_LEAST_ONCE, onPublish, onSubAck);
-        conditionVariable.wait(uniqueLock);
+        conditionVariable.wait(uniqueLock, [&]() { return subscribeAck; });
 
         while (true)
         {
+            publishCompleted = false;
             String input;
             fprintf(
                 stdout,
@@ -342,7 +347,7 @@ int main(int argc, char *argv[])
             ByteBuf payload = ByteBufNewCopy(DefaultAllocator(), (const uint8_t *)input.data(), input.length());
             ByteBuf *payloadPtr = &payload;
 
-            auto onPublishComplete = [payloadPtr](Mqtt::MqttConnection &, uint16_t packetId, int errorCode) {
+            auto onPublishComplete = [&, payloadPtr](Mqtt::MqttConnection &, uint16_t packetId, int errorCode) {
                 aws_byte_buf_clean_up(payloadPtr);
 
                 if (packetId)
@@ -353,8 +358,13 @@ int main(int argc, char *argv[])
                 {
                     fprintf(stdout, "Operation failed with error %s\n", aws_error_debug_str(errorCode));
                 }
+                std::lock_guard<std::mutex> lockGuard(mutex);
+                publishCompleted = true;
+                conditionVariable.notify_one();
             };
+
             connection->Publish(topic.c_str(), AWS_MQTT_QOS_AT_LEAST_ONCE, false, payload, onPublishComplete);
+            conditionVariable.wait(uniqueLock, [&]() { return publishCompleted; });
         }
 
         /*
