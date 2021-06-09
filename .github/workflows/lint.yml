@@ -16,3 +16,16 @@ jobs:
       with:
         # List of extensions to check
         extensions: cpp,h
+
+  max-path:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout Sources
+      uses: actions/checkout@v1
+      with:
+        submodules: recursive
+
+    - name: Max Path
+      uses: graebm/max-path-action@v1
+      with:
+        limit: 150
