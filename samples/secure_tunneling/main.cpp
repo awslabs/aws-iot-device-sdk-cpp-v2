@@ -255,10 +255,9 @@ int main(int argc, char *argv[])
         {
             fprintf(stderr, "MQTT Connection failed with error %d\n", ioErr);
         }
-        /* Disconnect */
-        if (connection->Disconnect())
+        else
         {
-            connectionClosedPromise.get_future().wait();
+            fprintf(stdout, "Subscribe successfully\n");
         }
     };
 
