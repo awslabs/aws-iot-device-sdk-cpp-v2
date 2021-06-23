@@ -90,11 +90,12 @@ target_include_directories(IotDeviceDefender-cpp PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>)
 
-if (NOT IS_SUBDIRECTORY_INCLUDE)
-    aws_use_package(aws-crt-cpp)
+if (BUILD_DEPS)
+	if (NOT IS_SUBDIRECTORY_INCLUDE)
+		aws_use_package(aws-crt-cpp)
+        endif()
+	aws_use_package(aws-c-iot)
 endif()
-
-aws_use_package(aws-c-iot)
 
 if (BUILD_TESTING)
     aws_use_package(IotDeviceCommon-cpp)
