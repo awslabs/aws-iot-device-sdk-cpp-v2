@@ -34,6 +34,8 @@ static void s_printHelp()
     fprintf(stdout, "key: path to your key in PEM format. If this is not set you must specify use_websocket\n");
     fprintf(stdout, "topic: topic to publish, subscribe to. (optional)\n");
     fprintf(stdout, "client_id: client id to use (optional)\n");
+    fprintf(stdout, "port: the MQTT port to connect to (optional)\n");
+    fprintf(stdout, "qos: the MQTT QoS level for published messages, valid values are 0,1,2 (optional)\n");
     fprintf(
         stdout,
         "ca_file: Optional, if the mqtt server uses a certificate that's not already"
@@ -94,7 +96,9 @@ int main(int argc, char *argv[])
     String clientId(String("test-") + Aws::Crt::UUID().ToString());
     String signingRegion;
     String proxyHost;
+    uint16_t port(0);
     uint16_t proxyPort(8080);
+    aws_mqtt_qos qos = AWS_MQTT_QOS_AT_LEAST_ONCE;
 
     String x509Endpoint;
     String x509ThingName;
@@ -143,7 +147,15 @@ int main(int argc, char *argv[])
     {
         clientId = s_getCmdOption(argv, argv + argc, "--client_id");
     }
-
+	if (s_cmdOptionExists(argv, argv + argc, "--port"))
+    {
+        port = static_cast<uint16_t>(atoi(s_getCmdOption(argv, argv + argc, "--port")));
+    }
+    if (s_cmdOptionExists(argv, argv + argc, "--qos"))
+    {
+        qos = static_cast<aws_mqtt_qos>(atoi(s_getCmdOption(argv, argv + argc, "--qos")));
+    }
+    
     if (s_cmdOptionExists(argv, argv + argc, "--use_websocket"))
     {
         if (!s_cmdOptionExists(argv, argv + argc, "--signing_region"))
@@ -370,6 +382,11 @@ int main(int argc, char *argv[])
         builder.WithCertificateAuthority(caFile.c_str());
     }
 
+	if (port != 0)
+	{
+		builder.WithPortOverride(port);
+	}
+	
     builder.WithEndpoint(endpoint);
 
     auto clientConfig = builder.Build();
@@ -554,7 +571,7 @@ int main(int argc, char *argv[])
                     fprintf(stdout, "Operation failed with error %s\n", aws_error_debug_str(errorCode));
                 }
             };
-            connection->Publish(topic.c_str(), AWS_MQTT_QOS_AT_LEAST_ONCE, false, payload, onPublishComplete);
+            connection->Publish(topic.c_str(), qos, false, payload, onPublishComplete);
         }
 
         /*

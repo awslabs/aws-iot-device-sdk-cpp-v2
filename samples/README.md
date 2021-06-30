@@ -95,6 +95,12 @@ To run the basic MQTT Pub-Sub use the following command:
 --topic <topic name>
 ```
 
+Note that if you are performing manual core discovery and connecting directly to a Greengrass Core you must ensure that:
+- you use the optional port flag to set the port (--port 8883)
+- you use the optional quality of service flag to decrease the quality of service to level 0 as this is the only level supported for communication to the Greengrass Core (--qos 0)
+- You are using the Greengrass Group certificate instead of the IoT Core root certificate for local server certificate validation (--ca_file group.cert.pem). You can obtain this certificate either using automatic discovery mode or using the AWS cli via the "get-group-certificate-authority" command
+
+
 ## Raw MQTT Pub-Sub
 
 This sample is similar to the Basic Pub-Sub, but the connection setup is more manual.
