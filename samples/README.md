@@ -6,6 +6,7 @@
 * [Shadow](#shadow)
 * [Jobs](#jobs)
 * [Greengrass discovery](#greengrass-discovery)
+* [Greengrass IPC](#greengrass-ipc)
 
 ## Build Instruction
 
@@ -342,4 +343,8 @@ Source: `samples/secure_tunneling`
 
 ## Greengrass discovery
 
-This sample is intended for direct usage with the Greengrass tutorial found [here](https://docs.aws.amazon.com/greengrass/latest/developerguide/gg-gs.html).
+This sample is intended for direct usage with the Greengrass Discovery tutorial found [here](https://docs.aws.amazon.com/greengrass/latest/developerguide/gg-gs.html).
+
+## Greengrass IPC
+
+This sample is intended for direct usage with the Greengrass IPC tutorial found [here](https://docs.aws.amazon.com/greengrass/v2/developerguide/ipc-iot-core-mqtt.html).
